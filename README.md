@@ -6,9 +6,9 @@ This chart shows which stocks tended to move together based on their daily retur
 
 ## Data and calculation
 
-The demo uses historical daily stock returns from the project’s feature dataset. The current demo covers August 2 to October 30, 2026, a 90-calendar-day window ending on the latest date in the dataset. It includes 498 stocks and 123,753 stock pairs with a valid correlation.
+The demo uses historical daily stock returns from the project’s feature dataset. It covers **August 2 through October 30, 2026**, a 90-calendar-day window ending on the latest date in the dataset. It includes 498 stocks and 123,753 stock pairs with a valid correlation.
 
-For each pair, [the Python script](prepare_correlations.py) matches daily returns by trading date and skips dates where either return is missing or invalid. It requires at least 60 shared trading days, then calculates the Pearson correlation of the two return series. The results are saved in [correlations.json](correlations.json), which the chart loads.
+The Python script matches each pair’s daily returns by trading date. A pair must have **at least 60 trading days when both stocks have valid daily returns** to calculate its Pearson correlation. The chart loads the results from [correlations.json](correlations.json). [View the Python script](prepare_correlations.py)
 
 A value close to +1 means the stocks’ daily returns tended to move in the same direction. A value close to −1 means they tended to move in opposite directions. A value near 0 means there was little linear relationship.
 
