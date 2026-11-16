@@ -1,3 +1,5 @@
+let searchId = 0;
+
 // Pass the dashboard's D3 v7 namespace and the generated correlations.json.
 export function mountStockRelationshipNetwork(container, { d3, data }) {
   const width = 800;
@@ -27,6 +29,17 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
     <header>
       <h2>Chart 5 — Stock Relationship Network <span class="sl-threshold-title"></span></h2>
       <p class="sl-period"></p>
+      <div class="sl-search">
+        <label>
+          <span>Search Stock</span>
+          <input type="search" role="combobox" aria-autocomplete="list"
+            aria-expanded="false" placeholder="Ticker or company name" autocomplete="off">
+        </label>
+        <div class="sl-search-popup" hidden>
+          <ul role="listbox" aria-label="Matching stocks"></ul>
+          <p role="status" hidden>No matching stocks</p>
+        </div>
+      </div>
     </header>
     <div class="sl-content">
       <div class="sl-graph-panel">
@@ -250,7 +263,7 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
     const value = threshold.toFixed(2);
     root.select(".sl-threshold-title").text(focus ? "" : `(Correlation ≥ ${value})`);
     root.select(".sl-slider strong").text(value);
-    root.select("input").property("disabled", focus);
+    root.select(".sl-slider input").property("disabled", focus);
     if (!focus) {
       hideTooltip();
       updateLinks(data.links.filter(link => link.correlation >= threshold));
@@ -330,10 +343,101 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
     svg.call(zoom.transform, d3.zoomIdentity);
     render();
   });
-  root.select("input").on("input", function () {
+  root.select(".sl-slider input").on("input", function () {
     threshold = Number(this.value);
     updateThreshold();
   });
+
+  const search = root.select(".sl-search input");
+  const popup = root.select(".sl-search-popup");
+  const listId = `sl-stock-results-${++searchId}`;
+  const results = popup.select("ul").attr("id", listId);
+  search.attr("aria-controls", listId);
+  const searchIndex = nodes.map(node => ({
+    node,
+    ticker: node.id.toLowerCase(),
+    company: node.company.toLowerCase(),
+  }));
+  let matches = [];
+  let activeMatch = 0;
+
+  function closeSearch() {
+    popup.property("hidden", true);
+    search.attr("aria-expanded", "false").attr("aria-activedescendant", null);
+  }
+
+  function highlightMatch(index) {
+    activeMatch = index;
+    results.selectAll("li").attr("aria-selected", (_, i) => i === index);
+    search.attr("aria-activedescendant", matches.length ? `${listId}-${index}` : null);
+  }
+
+  function chooseMatch(node) {
+    search.property("value", node.id);
+    closeSearch();
+    if (!focus) {
+      focus = true;
+      svg.call(zoom.transform, d3.zoomIdentity);
+      if (node.id === selected) {
+        highlight(undefined);
+        render();
+        return;
+      }
+    }
+    select(node.id);
+  }
+
+  function updateSearch() {
+    const query = search.property("value").trim().toLowerCase();
+    if (!query) {
+      closeSearch();
+      return;
+    }
+    const exact = [];
+    const prefixes = [];
+    const partial = [];
+    for (const { node, ticker, company } of searchIndex) {
+      if (ticker === query) exact.push(node);
+      else if (ticker.startsWith(query)) prefixes.push(node);
+      else if (ticker.includes(query) || company.includes(query)) partial.push(node);
+    }
+    matches = [...exact, ...prefixes, ...partial].slice(0, 8);
+    const options = results.selectAll("li").data(matches, node => node.id).join(
+      enter => {
+        const option = enter.append("li").attr("role", "option");
+        option.append("strong");
+        option.append("span");
+        return option;
+      }
+    ).attr("id", (_, i) => `${listId}-${i}`)
+      .on("mousedown", event => event.preventDefault())
+      .on("click", (_, node) => chooseMatch(node));
+    options.select("strong").text(node => node.id);
+    options.select("span").text(node => node.company);
+    popup.select("p").property("hidden", matches.length > 0);
+    popup.property("hidden", false);
+    search.attr("aria-expanded", "true");
+    highlightMatch(0);
+  }
+
+  search.on("input", updateSearch).on("blur", closeSearch)
+    .on("keydown", event => {
+      if (event.key === "Escape") {
+        closeSearch();
+        return;
+      }
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        if (popup.property("hidden")) updateSearch();
+        else if (matches.length) {
+          const step = event.key === "ArrowDown" ? 1 : -1;
+          highlightMatch((activeMatch + step + matches.length) % matches.length);
+        }
+      } else if (event.key === "Enter" && !popup.property("hidden") && matches.length) {
+        event.preventDefault();
+        chooseMatch(matches[activeMatch]);
+      }
+    });
   render();
 
   return () => {
