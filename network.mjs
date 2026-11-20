@@ -1,7 +1,7 @@
 let searchId = 0;
 
 // Pass the dashboard's D3 v7 namespace and the generated correlations.json.
-export function mountStockRelationshipNetwork(container, { d3, data }) {
+export function mountStockRelationshipNetwork(container, { d3, data, initialSelected = "NVDA", onSelect = () => {} }) {
   const width = 800;
   const height = 460;
   const focusInset = { x: 180, y: 50 };
@@ -16,7 +16,7 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
     peers.sort((a, b) => b.link.correlation - a.link.correlation || a.id.localeCompare(b.id));
   }
 
-  let selected = byId.has("NVDA") ? "NVDA" : nodes[0]?.id;
+  let selected = byId.has(initialSelected) ? initialSelected : nodes[0]?.id;
   let focus = true;
   let threshold = 0.60;
   let highlighted;
@@ -274,6 +274,7 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
   }
 
   function render() {
+    onSelect(byId.get(selected));
     sectorKey.property("hidden", focus || sectorColor.domain().length === 0);
     const { x, y } = focusInset;
     svg.attr("viewBox", focus ? `${x} ${y} ${width - 2 * x} ${height - 2 * y}` : `0 0 ${width} ${height}`);

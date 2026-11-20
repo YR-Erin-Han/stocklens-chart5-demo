@@ -324,3 +324,50 @@
   padding: 0 11px 9px;
   color: var(--sl-muted);
 }
+
+.sl-analysis-bar {
+  display: grid;
+  grid-template-columns: minmax(150px, .7fr) minmax(220px, 1fr) minmax(360px, 2fr);
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #142e51;
+}
+.sl-year-card, .sl-search-slot, .sl-summary {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #afc5df;
+  border-radius: 10px;
+  background: #f7faff;
+}
+.sl-year-card > strong { display: block; margin-bottom: 8px; }
+.sl-year-card select {
+  width: 100%; padding: 8px; border: 1px solid #afc5df; border-radius: 7px;
+  background: white; color: inherit; font: inherit;
+}
+.sl-search-slot .sl-search { max-width: none; margin: 0; position: relative; }
+.sl-search-slot label > span { display: block; margin-bottom: 8px; font-weight: 650; }
+.sl-search-slot input { width: 100%; padding: 8px 11px; border: 1px solid #afc5df; border-radius: 7px; font: inherit; color: inherit; }
+.sl-search-slot .sl-search-popup {
+  position: absolute; z-index: 3; top: calc(100% + 4px); width: 100%;
+  background: white; border: 1px solid #afc5df; border-radius: 8px; box-shadow: 0 6px 18px #142e5120;
+}
+.sl-search-slot ul { list-style: none; padding: 4px; margin: 0; }
+.sl-search-slot li { display: grid; grid-template-columns: 4em minmax(0,1fr); gap: 6px; padding: 6px; cursor: pointer; border-radius: 5px; }
+.sl-search-slot li[aria-selected="true"], .sl-search-slot li:hover { background: #e5f0ff; }
+.sl-search-slot .sl-search-popup p { padding: 8px; margin: 0; }
+.sl-summary { border-color: #ec9faa; background: #fff; }
+.sl-summary h3 { font-size: 14px; margin: 0 0 8px; }
+.sl-summary-values { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 10px; align-items: center; }
+.sl-summary-values > div { border-left: 1px solid #e4eaf3; padding-left: 10px; }
+.sl-summary-values span { display: block; font-size: 11px; color: #516982; }
+.sl-summary-values strong { display: block; font-size: 14px; }
+.sl-summary-period { font-size: 11px; color: #516982; margin: 7px 0 0; }
+.sl-load-status:empty { display: none; }
+@media (max-width: 1050px) {
+  .sl-analysis-bar { grid-template-columns: 1fr 1.3fr; }
+  .sl-summary { grid-column: 1 / -1; }
+}
+@media (max-width: 500px) {
+  .sl-analysis-bar { grid-template-columns: minmax(0,1fr); }
+  .sl-summary-values { grid-template-columns: 1fr 1fr; }
+}
