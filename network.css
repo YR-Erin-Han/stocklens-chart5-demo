@@ -392,3 +392,37 @@
   color: #15468e;
 }
 .sl-network .sl-all-sectors { margin-left: 8px; }
+
+.sl-comparison {
+  margin-top: 16px;
+  padding: 24px;
+  background: white;
+  border: 1px solid #dce7f4;
+  border-radius: 18px;
+  color: #142e51;
+}
+.sl-comparison h2 { margin: 0 0 14px; font-size: 21px; }
+.sl-compare-controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+.sl-compare-controls label { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sl-compare-controls input {
+  width: min(260px, 100%); border: 1px solid #afc5df; border-radius: 7px; padding: 8px; font: inherit;
+}
+.sl-compare-metrics { font-variant-numeric: tabular-nums; font-weight: 650; }
+.sl-compare-matches { padding: 6px 0; }
+.sl-compare-matches button {
+  display: block; width: 100%; text-align: left; padding: 7px 10px; border: 0;
+  background: #f0f6ff; color: #15468e; font: inherit; cursor: pointer;
+}
+.sl-compare-matches button:hover { background: #d4e7ff; }
+.sl-compare-period, .sl-compare-status { color: #516982; font-size: 13px; }
+.sl-compare-status:empty { display: none; }
+.sl-compare-plot svg { display: block; width: 100%; max-width: 900px; margin: auto; font: 12px system-ui, sans-serif; }
+.sl-compare-plot svg text { fill: #395875; }
+
+.sl-window-control, .sl-network .sl-sign-control {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: #395875;
+}
+.sl-window-control { margin: 0 0 14px; }
+.sl-window-control select, .sl-sign-control select {
+  border: 1px solid #afc5df; border-radius: 6px; padding: 7px; background: white; color: #142e51; font: inherit;
+}

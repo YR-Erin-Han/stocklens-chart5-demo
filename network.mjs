@@ -18,6 +18,7 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
 
   let selected = byId.has(initialSelected) ? initialSelected : nodes[0]?.id;
   let focus = true;
+  let negative = false;
   let threshold = 0.60;
   let highlighted;
   let visibleLinks = [];
@@ -65,6 +66,12 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
         <button type="button" data-mode="focus">Focus Mode</button>
       </div>
       <button type="button" class="sl-reset">Reset View</button>
+      <label class="sl-sign-control">Relationships
+        <select aria-label="Relationship direction">
+          <option value="positive">Positive correlation</option>
+          <option value="negative">Negative correlation</option>
+        </select>
+      </label>
       <span class="sl-count"></span>
       <label class="sl-slider">
         <span>Correlation Threshold <strong></strong></span>
@@ -167,7 +174,8 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
       pen.moveTo(source.x, source.y);
       pen.lineTo(target.x, target.y);
     }
-    pen.strokeStyle = focus ? "#8cabd5" : "#86a3bf";
+    pen.strokeStyle = negative ? "#cc6b43" : (focus ? "#8cabd5" : "#86a3bf");
+    pen.setLineDash(negative ? [4, 3] : []);
     pen.lineWidth = focus ? 1.75 : 0.55;
     pen.globalAlpha = focus ? 1 : 0.46;
     pen.stroke();
@@ -238,7 +246,7 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
 
   function renderRanking(peers) {
     root.select(".sl-ranking h3").text(
-      selected ? `Top ${peers.length} Correlated Stocks (${selected})` : "Correlated Stocks"
+      selected ? `Top ${peers.length} ${negative ? "Negatively" : "Positively"} Correlated Stocks (${selected})` : "Correlated Stocks"
     );
     const body = root.select("tbody");
     body.selectAll(".sl-empty-row").remove();
@@ -259,7 +267,7 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     });
     if (!peers.length) {
       body.append("tr").attr("class", "sl-empty-row").append("td").attr("colspan", 4)
-        .text("No stock pairs with sufficient shared trading days.");
+        .text("No matching stock pairs for this relationship direction.");
     }
   }
 
@@ -275,13 +283,13 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
 
   function updateThreshold() {
     const value = threshold.toFixed(2);
-    root.select(".sl-threshold-title").text(focus ? "" : `(Correlation ≥ ${value})`);
+    root.select(".sl-threshold-title").text(focus ? "" : (negative ? `(Correlation ≤ −${value})` : `(Correlation ≥ ${value})`));
     root.select(".sl-slider strong").text(value);
     root.select(".sl-slider input").property("disabled", focus);
     if (!focus) {
       hideTooltip();
       const activeIds = new Set(simulation.nodes().map(node => node.id));
-      updateLinks(data.links.filter(link => link.correlation >= threshold
+      updateLinks(data.links.filter(link => (negative ? link.correlation <= -threshold : link.correlation >= threshold)
         && activeIds.has(link.source) && activeIds.has(link.target)));
     }
   }
@@ -291,7 +299,12 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     sectorKey.property("hidden", focus || sectorColor.domain().length === 0);
     const { x, y } = focusInset;
     svg.attr("viewBox", focus ? `${x} ${y} ${width - 2 * x} ${height - 2 * y}` : `0 0 ${width} ${height}`);
-    const peers = rankings.get(selected)?.slice(0, 5) ?? [];
+    const peers = (rankings.get(selected) ?? [])
+      .filter(peer => negative ? peer.link.correlation < 0 : peer.link.correlation > 0)
+      .sort((a, b) => negative
+        ? a.link.correlation - b.link.correlation || a.id.localeCompare(b.id)
+        : b.link.correlation - a.link.correlation || a.id.localeCompare(b.id))
+      .slice(0, 5);
     peerIds = new Set(peers.map(peer => peer.id));
     const activeNodes = focus
       ? nodes.filter(node => node.id === selected || peerIds.has(node.id))
@@ -362,6 +375,12 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     focus = next;
     highlight(undefined);
     svg.call(zoom.transform, d3.zoomIdentity);
+    render();
+  });
+  root.select(".sl-sign-control select").on("change", function () {
+    negative = this.value === "negative";
+    highlight(undefined);
+    hideTooltip();
     render();
   });
   root.select(".sl-all-sectors").on("click", () => {

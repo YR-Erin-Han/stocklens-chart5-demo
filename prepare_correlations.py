@@ -11,15 +11,15 @@ MIN_OVERLAP = 60
 FIELDS = ["date", "ticker", "company_name", "sector", "industry", "stock_return_1d"]
 
 
-def build_network(csv_path, end_date=None):
-    data = pd.read_csv(csv_path, usecols=FIELDS, dtype={"ticker": "string"})
+def build_network(csv_path, end_date=None, start_date=None):
+    data = csv_path.copy() if isinstance(csv_path, pd.DataFrame) else pd.read_csv(csv_path, usecols=FIELDS, dtype={"ticker": "string"})
     data["date"] = pd.to_datetime(data["date"], format="%Y-%m-%d", errors="coerce")
     if end_date is not None:
         data = data.loc[data["date"] <= pd.Timestamp(end_date)].copy()
     end = data["date"].max()
     if pd.isna(end):
         raise ValueError("CSV contains no valid trading dates")
-    start = end - pd.Timedelta(days=89)
+    start = pd.Timestamp(start_date) if start_date is not None else end - pd.Timedelta(days=89)
     data["stock_return_1d"] = pd.to_numeric(data["stock_return_1d"], errors="coerce")
     data["ticker"] = data["ticker"].str.strip()
     data = data.loc[

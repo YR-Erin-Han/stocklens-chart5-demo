@@ -33,3 +33,11 @@ A value close to +1 means the stocks’ daily returns tended to move in the same
 - [Feature demo](https://yr-erin-han.github.io/stocklens-chart5-demo/enhancements/) uses the `feature/enhancements` branch.
 
 The feature demo adds clickable sector filters in Full Network and a Reset View button. Select several sectors to show their stocks and the links between them. All sectors clears the filter. Reset View restores the zoom, pan and node layout while keeping the current stock, mode, threshold and sector filter. Future feature work goes into `feature/enhancements`. Pushing to either branch publishes both demo links using their respective branch contents. The tag `backup-2026-11-19` saves the version before this branch setup.
+
+## Correlation windows and negative relationships (feature demo)
+
+Use Correlation window to choose the last 90 calendar days, last 180 calendar days, or all available dates in the selected year. Each window ends on the last available trading date in that year. The network, peer ranking and two-stock scatterplot use that same window. The annual stock summary continues to describe the selected year.
+
+Use Relationships to switch between positive and negative correlation. Positive peers are ranked from highest to lowest correlation. Negative peers are ranked from lowest to highest correlation. Focus Mode shows up to five matching peers without threshold filtering. In Full Network, a threshold of 0.60 shows correlations at least +0.60 in positive mode and at most −0.60 in negative mode. Negative links use orange dashed lines.
+
+Run `python prepare_windows.py /path/to/data` to generate the window-specific network and daily-return files. Every pair still requires 60 shared valid trading days. The feature demo includes the precomputed correlation and daily-return files for these windows.
