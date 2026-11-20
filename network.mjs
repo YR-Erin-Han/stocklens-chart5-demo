@@ -77,12 +77,14 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
   const svg = graph.append("svg").attr("viewBox", `0 0 ${width} ${height}`)
     .attr("role", "group").attr("aria-label", "Interactive stock relationship network");
   const viewport = svg.append("g");
-  const canvas = viewport.append("foreignObject").attr("width", width).attr("height", height)
+  const canvas = viewport.append("foreignObject").attr("x", -width).attr("y", -height)
+    .attr("width", width * 3).attr("height", height * 3)
     .attr("pointer-events", "none").append("xhtml:canvas")
-    .attr("width", width * 2).attr("height", height * 2)
-    .style("width", `${width}px`).style("height", `${height}px`).node();
+    .attr("width", width * 6).attr("height", height * 6)
+    .style("width", `${width * 3}px`).style("height", `${height * 3}px`).node();
   const pen = canvas.getContext("2d");
   pen.scale(2, 2);
+  pen.translate(width, height);
   const nodeLayer = viewport.append("g");
   const tooltip = root.select(".sl-tooltip");
   const sectorColor = d3.scaleOrdinal(d3.schemeTableau10.concat(["#777da7", "#8b695c"]))
@@ -137,7 +139,8 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
     });
 
   function bound(value, size, inset, node) {
-    const margin = radius(node) + 2 + (focus ? inset : 0);
+    if (!focus) return value;
+    const margin = radius(node) + 2 + inset;
     return Math.max(margin, Math.min(size - margin, value));
   }
 
@@ -147,7 +150,7 @@ export function mountStockRelationshipNetwork(container, { d3, data }) {
       node.y = bound(node.y, height, focusInset.y, node);
     }
     visibleNodes.attr("transform", node => `translate(${node.x},${node.y})`);
-    pen.clearRect(0, 0, width, height);
+    pen.clearRect(-width, -height, width * 3, height * 3);
     pen.beginPath();
     for (const { source, target } of visibleLinks) {
       pen.moveTo(source.x, source.y);
