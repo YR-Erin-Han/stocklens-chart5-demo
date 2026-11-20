@@ -1,6 +1,9 @@
 # StockLens — Chart 5: Stock Relationship Network
 
-[Open the interactive demo](https://yr-erin-han.github.io/stocklens-chart5-demo/)
+| Version | Branch | Demo |
+| --- | --- | --- |
+| Current version | `main` | [Open current demo](https://yr-erin-han.github.io/stocklens-chart5-demo/) |
+| New features | `feature/enhancements` | [Open feature demo](https://yr-erin-han.github.io/stocklens-chart5-demo/enhancements/) |
 
 This chart shows which stocks tended to move together based on their daily returns. Each dot is a stock. Each line connects two stocks and represents their correlation.
 
