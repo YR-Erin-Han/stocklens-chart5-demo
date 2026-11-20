@@ -1,5 +1,5 @@
-import { mountStockComparison } from "./comparison.mjs?v=windows-20261119";
-import { mountStockRelationshipNetwork } from "./network.mjs?v=windows-20261119";
+import { mountStockComparison } from "./comparison.mjs?v=point-click-20261119";
+import { mountStockRelationshipNetwork } from "./network.mjs?v=point-click-20261119";
 
 export async function mountDemo(container, d3) {
   const response = await fetch("./years.json");

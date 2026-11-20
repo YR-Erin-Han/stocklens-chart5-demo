@@ -12,6 +12,7 @@ export function mountStockComparison(container, d3) {
     <div class="sl-compare-matches" aria-label="Comparison search results" hidden></div>
     <p class="sl-compare-period"></p>
     <p class="sl-compare-status" role="status"></p>
+    <p class="sl-point-detail" aria-live="polite">Click a point to see its date and daily returns.</p>
     <div class="sl-compare-plot"></div>
   `);
   const input = root.select("input");
@@ -57,6 +58,7 @@ export function mountStockComparison(container, d3) {
     const current = ++sequence;
     plot.selectAll("*").remove();
     metrics.text("");
+    root.select(".sl-point-detail").text("Click a point to see its date and daily returns.");
     if (!network || !selected || !comparison) {
       status.text("Choose another stock to compare.");
       return;
@@ -119,8 +121,25 @@ export function mountStockComparison(container, d3) {
       svg.append("g").selectAll("circle").data(points).join("circle")
         .attr("cx", point => x(point.x)).attr("cy", point => y(point.y))
         .attr("r", 4.5).attr("fill", "#387bc4").attr("fill-opacity", 0.75)
-        .append("title").text(point =>
-          `${point.date}\n${first}: ${d3.format(".2%")(point.x)}\n${second}: ${d3.format(".2%")(point.y)}`);
+        .attr("tabindex", 0).attr("role", "button")
+        .attr("aria-label", point => `Show returns for ${point.date}`)
+        .style("cursor", "pointer")
+        .on("click", function (_, point) {
+          showPoint(this, point);
+        })
+        .on("keydown", function (event, point) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            showPoint(this, point);
+          }
+        });
+      function showPoint(element, point) {
+        svg.selectAll("circle").attr("r", 4.5).attr("fill", "#387bc4").attr("stroke", null);
+        d3.select(element).attr("r", 6).attr("fill", "#15468e").attr("stroke", "#142e51");
+        root.select(".sl-point-detail").text(
+          `${point.date} · ${first} ${d3.format("+.2%")(point.x)} · ${second} ${d3.format("+.2%")(point.y)}`
+        );
+      }
       svg.append("text").attr("x", width / 2).attr("y", height - 12)
         .attr("text-anchor", "middle").text(`${first} daily return`);
       svg.append("text").attr("transform", "rotate(-90)").attr("x", -height / 2)
