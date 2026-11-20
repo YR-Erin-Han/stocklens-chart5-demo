@@ -1,0 +1,50 @@
+name: Deploy both demos
+
+on:
+  push:
+    branches:
+      - main
+      - feature/enhancements
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out stable demo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: stable
+      - name: Check out feature demo
+        uses: actions/checkout@v4
+        with:
+          ref: feature/enhancements
+          path: feature
+      - name: Prepare both websites
+        run: |
+          mkdir -p site/enhancements
+          git -C stable archive HEAD | tar -x -C site
+          git -C feature archive HEAD | tar -x -C site/enhancements
+          rm -rf site/.github site/enhancements/.github
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload websites
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

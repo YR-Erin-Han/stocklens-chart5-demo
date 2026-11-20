@@ -23,3 +23,10 @@ A value close to +1 means the stocks’ daily returns tended to move in the same
 - **Focus Mode** shows the selected stock and the five stocks with the highest correlations to it. The table lists their correlations.
 - **Full Network** shows all stocks. Use the threshold slider to change which lines are shown. For example, a threshold of 0.60 shows pairs with a correlation of 0.60 or higher. The slider only filters the lines in this mode.
 - **Explore the graph** by clicking a stock to select it, hovering over a stock or line for details, and dragging nodes to move them. In Full Network, the legend explains the sector colors.
+
+## Demo versions
+
+- [Current demo](https://yr-erin-han.github.io/stocklens-chart5-demo/) uses the `main` branch.
+- [Feature demo](https://yr-erin-han.github.io/stocklens-chart5-demo/enhancements/) uses the `feature/enhancements` branch.
+
+Both branches start with the same features. Future feature work goes into `feature/enhancements`. Pushing to either branch publishes both demo links using their respective branch contents. The tag `backup-2026-11-19` saves the version before this branch setup.
