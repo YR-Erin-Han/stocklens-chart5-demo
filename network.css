@@ -371,3 +371,24 @@
   .sl-analysis-bar { grid-template-columns: minmax(0,1fr); }
   .sl-summary-values { grid-template-columns: 1fr 1fr; }
 }
+
+.sl-network .sl-sector-filter, .sl-network .sl-all-sectors, .sl-network .sl-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid #dce7f4;
+  border-radius: 6px;
+  background: #fff;
+  color: #395875;
+  font: inherit;
+}
+.sl-network .sl-sector-filter:hover, .sl-network .sl-all-sectors:hover,
+.sl-network .sl-reset:hover { background: #edf4fe; }
+.sl-network .sl-sector-filter[aria-pressed="true"],
+.sl-network .sl-all-sectors[aria-pressed="true"] {
+  border-color: #4d86d4;
+  background: #e5f0ff;
+  color: #15468e;
+}
+.sl-network .sl-all-sectors { margin-left: 8px; }

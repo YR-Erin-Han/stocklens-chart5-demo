@@ -23,6 +23,7 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
   let visibleLinks = [];
   let visibleNodes;
   let peerIds = new Set();
+  const selectedSectors = new Set();
 
   const root = d3.select(container).append("section").attr("class", "sl-network");
   root.html(`
@@ -45,7 +46,8 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
       <div class="sl-graph-panel">
         <div class="sl-graph"></div>
         <div class="sl-sector-key" hidden>
-          <strong>Sectors</strong>
+          <strong>Filter by sector</strong>
+          <button type="button" class="sl-all-sectors">All sectors</button>
           <ul aria-label="Sector colors"></ul>
         </div>
       </div>
@@ -62,6 +64,7 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
         <button type="button" data-mode="full">Full Network</button>
         <button type="button" data-mode="focus">Focus Mode</button>
       </div>
+      <button type="button" class="sl-reset">Reset View</button>
       <span class="sl-count"></span>
       <label class="sl-slider">
         <span>Correlation Threshold <strong></strong></span>
@@ -92,9 +95,17 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
   const sectorKey = root.select(".sl-sector-key");
   const sectorItems = sectorKey.select("ul").selectAll("li")
     .data(sectorColor.domain()).join("li");
-  sectorItems.append("span").attr("class", "sl-sector-dot").attr("aria-hidden", "true")
+  const sectorButtons = sectorItems.append("button").attr("type", "button")
+    .attr("class", "sl-sector-filter").attr("aria-pressed", "false")
+    .on("click", (_, sector) => {
+      if (selectedSectors.has(sector)) selectedSectors.delete(sector);
+      else selectedSectors.add(sector);
+      highlight(undefined);
+      render();
+    });
+  sectorButtons.append("span").attr("class", "sl-sector-dot").attr("aria-hidden", "true")
     .style("background-color", sectorColor);
-  sectorItems.append("span").text(sector => sector === "Unknown" ? "Unknown sector" : sector);
+  sectorButtons.append("span").text(sector => sector === "Unknown" ? "Unknown sector" : sector);
 
   const zoom = d3.zoom().scaleExtent([0.65, 5])
     .filter(event => !focus && !event.button && (event.type === "wheel" || !event.target.closest(".sl-node")))
@@ -269,7 +280,9 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     root.select(".sl-slider input").property("disabled", focus);
     if (!focus) {
       hideTooltip();
-      updateLinks(data.links.filter(link => link.correlation >= threshold));
+      const activeIds = new Set(simulation.nodes().map(node => node.id));
+      updateLinks(data.links.filter(link => link.correlation >= threshold
+        && activeIds.has(link.source) && activeIds.has(link.target)));
     }
   }
 
@@ -280,7 +293,11 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     svg.attr("viewBox", focus ? `${x} ${y} ${width - 2 * x} ${height - 2 * y}` : `0 0 ${width} ${height}`);
     const peers = rankings.get(selected)?.slice(0, 5) ?? [];
     peerIds = new Set(peers.map(peer => peer.id));
-    const activeNodes = focus ? nodes.filter(node => node.id === selected || peerIds.has(node.id)) : nodes;
+    const activeNodes = focus
+      ? nodes.filter(node => node.id === selected || peerIds.has(node.id))
+      : nodes.filter(node => !selectedSectors.size || selectedSectors.has(node.sector));
+    sectorButtons.attr("aria-pressed", sector => selectedSectors.has(sector));
+    root.select(".sl-all-sectors").attr("aria-pressed", selectedSectors.size === 0);
     const orbit = new Map(peers.map((peer, index) => [peer.id, (index / peers.length) * 2 * Math.PI - Math.PI / 2]));
     visibleNodes = nodeLayer.selectAll(".sl-node").data(activeNodes, node => node.id).join(
       enter => {
@@ -345,6 +362,26 @@ export function mountStockRelationshipNetwork(container, { d3, data, initialSele
     focus = next;
     highlight(undefined);
     svg.call(zoom.transform, d3.zoomIdentity);
+    render();
+  });
+  root.select(".sl-all-sectors").on("click", () => {
+    selectedSectors.clear();
+    highlight(undefined);
+    render();
+  });
+  root.select(".sl-reset").on("click", () => {
+    hideTooltip();
+    highlight(undefined);
+    svg.call(zoom.transform, d3.zoomIdentity);
+    simulation.stop();
+    for (const node of nodes) {
+      node.x = undefined;
+      node.y = undefined;
+      node.vx = 0;
+      node.vy = 0;
+      node.fx = null;
+      node.fy = null;
+    }
     render();
   });
   root.select(".sl-slider input").on("input", function () {

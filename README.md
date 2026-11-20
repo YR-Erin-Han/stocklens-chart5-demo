@@ -32,4 +32,4 @@ A value close to +1 means the stocks’ daily returns tended to move in the same
 - [Current demo](https://yr-erin-han.github.io/stocklens-chart5-demo/) uses the `main` branch.
 - [Feature demo](https://yr-erin-han.github.io/stocklens-chart5-demo/enhancements/) uses the `feature/enhancements` branch.
 
-Both branches start with the same features. Future feature work goes into `feature/enhancements`. Pushing to either branch publishes both demo links using their respective branch contents. The tag `backup-2026-11-19` saves the version before this branch setup.
+The feature demo adds clickable sector filters in Full Network and a Reset View button. Select several sectors to show their stocks and the links between them. All sectors clears the filter. Reset View restores the zoom, pan and node layout while keeping the current stock, mode, threshold and sector filter. Future feature work goes into `feature/enhancements`. Pushing to either branch publishes both demo links using their respective branch contents. The tag `backup-2026-11-19` saves the version before this branch setup.
