@@ -64,10 +64,14 @@ def build_network(csv_path, end_date=None, start_date=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("csv", type=Path)
+    parser.add_argument("data_folder", type=Path, help="Project data directory")
     parser.add_argument("--output", type=Path, default=Path(__file__).with_name("correlations.json"))
     args = parser.parse_args()
-    network = build_network(args.csv)
+    returns = pd.read_csv(args.data_folder / "comparison_daily_returns.csv",
+                          usecols=["date", "ticker", "stock_return_1d"])
+    companies = pd.read_csv(args.data_folder / "companies.csv")
+    data = returns.merge(companies, on="ticker", how="left", validate="many_to_one")
+    network = build_network(data)
     with args.output.open("w", encoding="utf-8") as stream:
         json.dump(network, stream, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     print(f'{len(network["nodes"])} stocks, {len(network["links"])} pairs → {args.output}')

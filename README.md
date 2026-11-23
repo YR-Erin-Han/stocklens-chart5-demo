@@ -9,13 +9,13 @@ This chart shows which stocks tended to move together based on their daily retur
 
 ## Data and calculation
 
-The demo uses historical daily stock returns from the project’s feature dataset. Choose an analysis year from **2018–2026**. The network uses the final 90 calendar days ending on the last available trading date in that year. The default 2026 network covers **August 2 through October 30, 2026** and includes 498 stocks and 123,753 stock pairs with a valid correlation.
+All displayed data comes from the project’s `data` folder. Choose an analysis year from **2018–2026**. The network uses the final 90 calendar days ending on the last available trading date in that year. The default 2026 network covers **August 2 through October 30, 2026** and includes 498 stocks and 123,753 stock pairs with a valid correlation.
 
 The stock summary shows the selected year's annualized return, annualized volatility and sector. These values come from `stock_risk_return.csv`. The summary shows its actual start and end dates, including the prior closing date used to measure returns. The 2026 period ends on October 30. Missing annual summaries show N/A.
 
 Yearly networks use daily returns from `comparison_daily_returns.csv` and company details from `companies.csv`. Generate them with `python prepare_years.py /path/to/data` after installing pandas and numpy.
 
-The Python script matches each pair’s daily returns by trading date. A pair must have **at least 60 trading days when both stocks have valid daily returns** to calculate its Pearson correlation. The chart loads the results from [correlations.json](correlations.json). [View the Python script](prepare_correlations.py)
+The Python script matches each pair’s daily returns by trading date. A pair must have **at least 60 trading days when both stocks have valid daily returns** to calculate its Pearson correlation. The chart loads precomputed correlation JSON files for the selected year and window. [View the Python script](prepare_correlations.py)
 
 A value close to +1 means the stocks’ daily returns tended to move in the same direction. A value close to −1 means they tended to move in opposite directions. A value near 0 means there was little linear relationship.
 
@@ -41,3 +41,15 @@ Use Correlation window to choose the last 90 calendar days, last 180 calendar da
 Use Relationships to switch between positive and negative correlation. Positive peers are ranked from highest to lowest correlation. Negative peers are ranked from lowest to highest correlation. Focus Mode shows up to five matching peers without threshold filtering. In Full Network, a threshold of 0.60 shows correlations at least +0.60 in positive mode and at most −0.60 in negative mode. Negative links use orange dashed lines.
 
 Run `python prepare_windows.py /path/to/data` to generate the window-specific network and daily-return files. Every pair still requires 60 shared valid trading days. The feature demo includes the precomputed correlation and daily-return files for these windows.
+
+## Data sources
+
+All page data is generated from these files in the project data folder.
+
+| File | Used for |
+| --- | --- |
+| `comparison_daily_returns.csv` | Date-aligned daily stock returns for correlations and scatterplots |
+| `companies.csv` | Ticker, company name, sector and industry |
+| `stock_risk_return.csv` | Yearly return and volatility summary |
+
+Run `python prepare_years.py /path/to/data` for yearly 90-day networks and summaries. For the feature demo, also run `python prepare_windows.py /path/to/data`. Run `python prepare_correlations.py /path/to/data` for the standalone latest 90-day network. The browser reads the generated JSON files. The source data is a saved snapshot through October 30, 2026.
