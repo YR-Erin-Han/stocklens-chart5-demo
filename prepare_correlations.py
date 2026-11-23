@@ -11,15 +11,15 @@ MIN_OVERLAP = 60
 FIELDS = ["date", "ticker", "company_name", "sector", "industry", "stock_return_1d"]
 
 
-def build_network(csv_path, end_date=None):
-    data = pd.read_csv(csv_path, usecols=FIELDS, dtype={"ticker": "string"})
+def build_network(csv_path, end_date=None, start_date=None):
+    data = csv_path.copy() if isinstance(csv_path, pd.DataFrame) else pd.read_csv(csv_path, usecols=FIELDS, dtype={"ticker": "string"})
     data["date"] = pd.to_datetime(data["date"], format="%Y-%m-%d", errors="coerce")
     if end_date is not None:
         data = data.loc[data["date"] <= pd.Timestamp(end_date)].copy()
     end = data["date"].max()
     if pd.isna(end):
         raise ValueError("CSV contains no valid trading dates")
-    start = end - pd.Timedelta(days=89)
+    start = pd.Timestamp(start_date) if start_date is not None else end - pd.Timedelta(days=89)
     data["stock_return_1d"] = pd.to_numeric(data["stock_return_1d"], errors="coerce")
     data["ticker"] = data["ticker"].str.strip()
     data = data.loc[
@@ -64,10 +64,14 @@ def build_network(csv_path, end_date=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("csv", type=Path)
+    parser.add_argument("data_folder", type=Path, help="Project data directory")
     parser.add_argument("--output", type=Path, default=Path(__file__).with_name("correlations.json"))
     args = parser.parse_args()
-    network = build_network(args.csv)
+    returns = pd.read_csv(args.data_folder / "comparison_daily_returns.csv",
+                          usecols=["date", "ticker", "stock_return_1d"])
+    companies = pd.read_csv(args.data_folder / "companies.csv")
+    data = returns.merge(companies, on="ticker", how="left", validate="many_to_one")
+    network = build_network(data)
     with args.output.open("w", encoding="utf-8") as stream:
         json.dump(network, stream, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     print(f'{len(network["nodes"])} stocks, {len(network["links"])} pairs → {args.output}')
