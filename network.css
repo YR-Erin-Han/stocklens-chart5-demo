@@ -426,3 +426,19 @@
 .sl-window-control select, .sl-sign-control select {
   border: 1px solid #afc5df; border-radius: 6px; padding: 7px; background: white; color: #142e51; font: inherit;
 }
+
+.sl-compare-plot { position: relative; max-width: 900px; margin: auto; }
+.sl-scatter-tooltip {
+  position: absolute;
+  z-index: 1;
+  width: max-content;
+  max-width: min(230px, 75%);
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #142e51;
+  color: white;
+  box-shadow: 0 3px 12px #142e5126;
+  font-size: 12px;
+  line-height: 1.6;
+  pointer-events: none;
+}

@@ -118,6 +118,13 @@ export function mountStockComparison(container, d3) {
         svg.append("line").attr("x1", margin.left).attr("x2", width - margin.right)
           .attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "#c8d5e5").attr("stroke-dasharray", "4 4");
       }
+      const tooltip = plot.append("div").attr("class", "sl-scatter-tooltip")
+        .attr("role", "status").attr("aria-live", "polite").property("hidden", true);
+      svg.on("click", event => {
+        if (event.target.tagName.toLowerCase() !== "circle") clearPoint();
+      }).on("keydown", event => {
+        if (event.key === "Escape") clearPoint();
+      });
       svg.append("g").selectAll("circle").data(points).join("circle")
         .attr("cx", point => x(point.x)).attr("cy", point => y(point.y))
         .attr("r", 4.5).attr("fill", "#387bc4").attr("fill-opacity", 0.75)
@@ -136,9 +143,18 @@ export function mountStockComparison(container, d3) {
       function showPoint(element, point) {
         svg.selectAll("circle").attr("r", 4.5).attr("fill", "#387bc4").attr("stroke", null);
         d3.select(element).attr("r", 6).attr("fill", "#15468e").attr("stroke", "#142e51");
-        root.select(".sl-point-detail").text(
-          `${point.date} · ${first} ${d3.format("+.2%")(point.x)} · ${second} ${d3.format("+.2%")(point.y)}`
-        );
+        tooltip.selectAll("*").remove();
+        tooltip.append("strong").text(point.date);
+        tooltip.append("div").text(`${first} daily return ${d3.format("+.2%")(point.x)}`);
+        tooltip.append("div").text(`${second} daily return ${d3.format("+.2%")(point.y)}`);
+        tooltip.property("hidden", false)
+          .style("left", `${x(point.x) / width * 100}%`)
+          .style("top", `${y(point.y) / height * 100}%`)
+          .style("transform", `translate(${x(point.x) > width / 2 ? "calc(-100% - 12px)" : "12px"}, ${y(point.y) > height / 2 ? "calc(-100% - 12px)" : "12px"})`);
+      }
+      function clearPoint() {
+        tooltip.property("hidden", true);
+        svg.selectAll("circle").attr("r", 4.5).attr("fill", "#387bc4").attr("stroke", null);
       }
       svg.append("text").attr("x", width / 2).attr("y", height - 12)
         .attr("text-anchor", "middle").text(`${first} daily return`);
